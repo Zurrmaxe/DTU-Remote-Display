@@ -1,0 +1,345 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2513
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\ri-6\partightenfactor0
+
+\f0\fs24 \cf0 #include <WiFi.h>\
+#include <PubSubClient.h>\
+#include <NTPClient.h>\
+#include <WiFiUdp.h>\
+#include <HTTPClient.h>\
+#include <ArduinoJson.h>\
+\
+#define ENABLE_GxEPD2_GFX 0\
+\
+#include <GxEPD2_BW.h>\
+#include <GxEPD2_3C.h>\
+#include <GxEPD2_7C.h>\
+#include <Fonts/FreeMono9pt7b.h>\
+#include <Fonts/FreeMonoBold9pt7b.h>\
+#include <Fonts/FreeMonoBold12pt7b.h>\
+#include <Fonts/Dialog_plain_112.h>\
+\
+#define svetaine_temp_topic "skaidiskes/meteo/svetaine/temp"\
+#define svetaine_dregme_topic "skaidiskes/meteo/svetaine/dregme"\
+#define laukas_temp_topic "skaidiskes/meteo/laukas/temp"\
+#define laukas_dregme_topic "skaidiskes/meteo/laukas/dregme"\
+#define laukas_slegis_topic "skaidiskes/meteo/laukas/slegis"\
+#define siltnamis_temp_topic "skaidiskes/meteo/siltnamis/temperatura"\
+#define baseinas_temp_topic "skaidiskes/meteo/baseinas/temperatura"\
+#define spyna_state_topic "skaidiskes/namai/spyna"\
+#define programos_testas "programos/testas"\
+\
+\
+WiFiClient espClient;\
+PubSubClient client(espClient);\
+// Define NTP Client to get time\
+WiFiUDP ntpUDP;\
+NTPClient timeClient(ntpUDP);\
+HTTPClient http;\
+\
+// or select the display class and display driver class in the following file (new style):\
+#include "GxEPD2_display_selection_new_style.h"\
+\
+#if !defined(__AVR) && !defined(_BOARD_GENERIC_STM32F103C_H_)\
+#endif\
+\
+#if defined(ESP8266) || defined(ESP32)\
+#include "EPD_mano_800x600h.h" // 6.0"  grey\
+#endif\
+\
+void setup()\
+\{\
+  Serial.begin(115200);\
+    Serial.println();\
+\
+  delay(100);\
+\
+   setup_wifi();\
+   \
+  client.setServer(mqtt_server, mqtt_port);\
+    client.setCallback(callback);\
+   \
+delay(100);\
+\
+  reconnect();\
+\
+delay(100);\
+// Initialize a NTPClient to get time\
+  timeClient.begin();\
+    timeClient.setTimeOffset(7200);\
+  \
+int var = 0;\
+while (var < 5000) \{\
+  client.loop();\
+  var++;\
+\}\
+\
+  Serial.println("Begin setup");\
+delay(100);\
+  display.init(115200);\
+  // first update should be full refresh\
+delay(1000);\
+  \
+  printDisplay(); \
+  \
+delay(100);\
+\
+  solar_http();\
+\
+delay(100);\
+\
+  ntp();\
+  ntp_time();\
+delay(100);\
+  display.powerOff();\
+  \
+  Serial.println("Complete.");\
+\}\
+\
+void loop()\
+\{\
+\}\
+\
+void printDisplay() \
+\{\
+  \
+  display.setFullWindow();  // Set full window mode, meaning is going to update the entire screen\
+  display.firstPage();  // Tell the graphics class to use paged drawing mode\
+  do\
+  \{ \
+    // Put everything you want to print in this screen:\
+    \
+    // Print image:\
+    display.fillScreen(GxEPD_WHITE);  // Clear previous graphics to start over to print new things.\
+    display.drawBitmap(0,0, gImage_EPD_mano_800x600h, 800,600, GxEPD_BLACK);  // Print YouTube logo - Black part (POSITION_X, POSITION_Y, IMAGE_NAME, IMAGE_WIDTH, IMAGE_HEIGHT, COLOR)\
+    //display.drawBitmap(0,0, yt2, 200,45, GxEPD_BLACK);  // Print YouTube logo - Red part (POSITION_X, POSITION_Y, IMAGE_NAME, IMAGE_WIDTH, IMAGE_HEIGHT, COLOR)\
+    \
+    // Print Subscribers image:\
+    float calculated;\
+    float Body_Data_Site_E_Day;\
+    String dayStamp;\
+    String timeStamp;\
+    String msg;\
+\
+    Body_Data_Site_E_Day=solar_http();\
+    dayStamp=ntp();\
+    timeStamp=ntp_time();\
+    msg=mqtt_process_test_payload();\
+    \
+    calculated=Body_Data_Site_E_Day/1000;\
+    \
+    // Print text - "3,456" (example number of subscribers):\
+    display.setTextColor(GxEPD_BLACK);  // Set color for text\
+    display.setFont(&Dialog_plain_112);  // Set font\
+    display.setCursor(450, 370);  // saules kwh pozicija (x,y)\
+    display.print(calculated);  // Print some text\
+\
+    display.setCursor(240, 370);  // svetaines temp pozicija (x,y)\
+    display.print("30");  // Print some text\
+\
+    display.setCursor(215, 180);  // lauko temp pozicija (x,y)\
+    display.print("-24");  // Print some text\
+\
+    display.setCursor(435, 180);  // siltnamio temp pozicija (x,y)\
+    display.print(msg);  // Print some text\
+\
+    display.setCursor(625, 180);  // baseino temp pozicija (x,y)\
+    display.print("20");  // Print some text\
+\
+    display.setFont(&FreeMono9pt7b);\
+    display.setCursor(80, 587);  // atnaujinta (x,y)\
+    display.print(dayStamp);  // Print some text\
+\
+    display.setCursor(192, 587);  // atnaujinta (x,y)\
+    display.print("--");  // Print some text\
+    \
+    display.setCursor(220, 587);  // atnaujinta (x,y)\
+    display.print(timeStamp);  // Print some text\
+\
+\
+    display.setCursor(380, 587);  // baterija (x,y)\
+    display.print("60 %");  // Print some text\
+\
+    display.setFont(&FreeMonoBold12pt7b);\
+    display.setCursor(650, 587);  // lauko durys (x,y)\
+    display.print("ATRAKINTA");  // Print some text\
+\
+  \}\
+  while (display.nextPage());  // Print everything we set previously\
+  // End of screen 2\
+\}\
+\
+// ============================================================\
+\
+void setup_wifi() \{\
+  Serial.println();\
+    Serial.print("Connecting to ");\
+    Serial.println(ssid);\
+    \
+    WiFi.begin(ssid, password);\
+    \
+//WiFi.config(local_IP, gateway, subnet, dns);\
+\
+    while (WiFi.status() != WL_CONNECTED) \{\
+        delay(500);\
+        Serial.print(".");\
+    \}\
+\
+    Serial.println("");\
+    Serial.println("WiFi connected");\
+    Serial.println("IP address: ");\
+    Serial.println(WiFi.localIP());\
+\
+\}\
+\
+/********************************** START CALLBACK*****************************************/\
+void callback(char* topic, byte* payload, unsigned int length) \{\
+ payload[length] = '\\0';\
+  Serial.print("Message arrived in topic: ");\
+  Serial.println(topic);\
+ \
+  Serial.print("Message:");\
+  for (int i = 0; i < length; i++) \{\
+    Serial.print((char)payload[i]);\
+  \}\
+\
+  Serial.println();\
+  Serial.println("-----------------------");\
+ \
+ mqtt_process_test_payload(topic, payload);\
+ \
+\}\
+\
+String mqtt_process_test_payload(char* topic, byte* payload) \{\
+\
+String msg;\
+String strTopic;\
+\
+  strTopic = String((char*)topic);\
+  if(strTopic == programos_testas)\
+    \{\
+      \
+    msg = String((char*)payload);\
+    Serial.print("mqtt_proceso pranesimas yra: ");\
+        Serial.println(msg);\
+        return msg;\
+\}\
+\}\
+\
+\
+  /********************************** START RECONNECT*****************************************/\
+void reconnect() \{\
+  // Loop until we're reconnected\
+\
+  while (!client.connected()) \{\
+    Serial.println("Connecting to MQTT...");\
+ \
+    if (client.connect("ESP32Client", mqtt_user, mqtt_password )) \{\
+ \
+      Serial.println("connected");  \
+ \
+    \} else \{\
+ \
+      Serial.print("failed with state ");\
+      Serial.print(client.state());\
+      delay(2000);\
+ \
+    \}\
+\}\
+\
+client.subscribe(svetaine_temp_topic);\
+//client.subscribe(svetaine_dregme_topic);\
+//client.subscribe(laukas_temp_topic);\
+//client.subscribe(laukas_dregme_topic);\
+//client.subscribe(laukas_slegis_topic);\
+client.subscribe(siltnamis_temp_topic);\
+//client.subscribe(baseinas_temp_topic);\
+client.subscribe(spyna_state_topic);\
+client.subscribe(programos_testas);\
+\}\
+\
+String ntp() \{\
+  // Variables to save date and time\
+\
+String formattedDate;\
+String dayStamp;\
+String timeStamp;\
+\
+  while(!timeClient.update()) \{\
+    timeClient.forceUpdate();\
+  \}\
+  formattedDate = timeClient.getFormattedDate();\
+  //Serial.println(formattedDate);\
+\
+  // Extract date\
+  int splitT = formattedDate.indexOf("T");\
+  dayStamp = formattedDate.substring(0, splitT);\
+  Serial.print("ATNAUJINTA: ");\
+  Serial.print(dayStamp);\
+  return dayStamp;\
+\
+\}\
+\
+  String ntp_time() \{\
+  // Variables to save date and time\
+\
+String formattedDate;\
+String timeStamp;\
+String dayStamp;\
+\
+  while(!timeClient.update()) \{\
+    timeClient.forceUpdate();\
+  \}\
+  formattedDate = timeClient.getFormattedDate();\
+  //Serial.println(formattedDate);\
+int splitT = formattedDate.indexOf("T");\
+  dayStamp = formattedDate.substring(0, splitT);\
+  // Extract time\
+  timeStamp = formattedDate.substring(splitT+1, formattedDate.length()-1);\
+  Serial.print("--");\
+  Serial.println(timeStamp);\
+  return timeStamp;\
+\
+  delay(100);\
+  \
+\}\
+\
+float solar_http() \{\
+  \
+  http.begin(solar_web); //Specify the URL\
+    int httpCode = http.GET();                                        //Make the request\
+ \
+    if (httpCode > 0) \{ //Check for the returning code\
+ \
+        String json = http.getString();\
+        Serial.println(httpCode);\
+//        Serial.println(payload); // reikalingas tik parodyti uzklausos turini, testavimui\
+\
+const size_t capacity = JSON_OBJECT_SIZE(0) + 2*JSON_OBJECT_SIZE(1) + JSON_OBJECT_SIZE(2) + 3*JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(11) + 490;\
+DynamicJsonBuffer jsonBuffer(capacity);\
+\
+JsonObject& root = jsonBuffer.parseObject(json);\
+\
+JsonObject& Body_Data = root["Body"]["Data"];\
+\
+JsonObject& Body_Data_Site = Body_Data["Site"];\
+float Body_Data_Site_E_Day = Body_Data_Site["E_Day"];\
+\
+Serial.print("\'8aios dienos duomenys yra: ");\
+Serial.println(Body_Data_Site_E_Day);\
+\
+return Body_Data_Site_E_Day;\
+\
+      \}\
+ \
+    else \{\
+      Serial.println("Error on HTTP request");\
+    \}\
+ \
+    http.end(); //Free the resources\
+\}\
+}
