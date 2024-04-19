@@ -50,15 +50,15 @@ font = ImageFont.truetype(font_path, 18)
 
 
 # Diese Daten müssen angepasst werden:
-serial = "138290780486" # Seriennummer des Hoymiles Wechselrichters
+serial = "138290xx0486" # Seriennummer des Hoymiles Wechselrichters
 maximum_wr = 2200 # Maximale Ausgabe des Wechselrichters
 minimum_wr = 500 # Minimale Ausgabe des Wechselrichters
 
-dtu_ip = '192.168.178.191' # IP Adresse von OpenDTU
+dtu_ip = '192.000.000.000' # IP Adresse von OpenDTU
 dtu_nutzer = 'admin' # OpenDTU Nutzername
-dtu_passwort = 'Volzel1990' # OpenDTU Passwort
+dtu_passwort = 'password' # OpenDTU Passwort
 
-shelly_ip = '192.168.178.200' # IP Adresse von Shelly 3EM
+shelly_ip = '192.000.000.000' # IP Adresse von Shelly 3EM
 
 
 #msa = grid_sum
