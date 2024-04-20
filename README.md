@@ -3,6 +3,7 @@ Einfaches Remote-Display für openDTU-on-Battery ohne MQTT.
 Als Grundlage dient folgender Guthub :
 
 https://github.com/Selbstbau-PV/Selbstbau-PV-Hoymiles-nulleinspeisung-mit-OpenDTU-und-Shelly3EM/tree/main
+
 Dieses Skript ist ebenso ein Fork von: https://gitlab.com/p3605/hoymiles-tarnkappe
 
 Dieser Github wurde um ein Display und die Leuchtdioden ergänzt und an die örtlichen Gegebenheiten angepasst.
