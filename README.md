@@ -1,5 +1,11 @@
 Einfaches Remote-Display für openDTU-on-Battery ohne MQTT.
 
+Als Grundlage dient folgender Guthub :
+
+https://github.com/Selbstbau-PV/Selbstbau-PV-Hoymiles-nulleinspeisung-mit-OpenDTU-und-Shelly3EM/tree/main
+
+Dieser Github wurde um ein Display ergänzt und an die örtlichen Gegebenheiten angepasst.
+
 Sicherlich kann man es auch auf einem ESP32 installieren, aber dazu fehlen mir die Kentnisse. 
 Daher alles in herkömmlicher weise in Linus/Armbian. Lauffähig ist das Script unter LiNUX/Python und wurde auf einem OrangePiZero eingesetzt. 
 Es wird automatisch beim Start geladen. (service enable start service pp.)
