@@ -9,7 +9,10 @@ Gelbe LED = Sonnenenergie wird produziert.
 Grüne LED = Strom wird eingespeist.
 Rote LED  = Strom wird kostenpflichtig aus dem Netz bezogen.
 
-Lauffähig ist das Script auf LiNUX und wurde auf einem OrangePiZero eingesetzt. 
-Es wird automatisch beim Start geladen.
+Anstelle der LED können auch Relais angeschlossen werden. Die Anzahl der Ausgänge ist hier auf drei beschränkt. Könne aber jederzeit erweitert werden.
+Später sollen damit auch bestimmte Verbraucher angesteuert werden.
 
-Im Hintergrund läuft zudem noch mein Homeassistent
+Lauffähig ist das Script unter LiNUX/Python und wurde auf einem OrangePiZero eingesetzt. 
+Es wird automatisch beim Start geladen. (service enable start service )
+
+Im Hintergrund läuft nebenbei noch mein Homeassistent.
