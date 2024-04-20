@@ -9,7 +9,7 @@ Gelbe LED = Sonnenenergie wird produziert.
 Grüne LED = Strom wird eingespeist.
 Rote LED  = Strom wird kostenpflichtig aus dem Netz bezogen.
 
-Anstelle der LED können auch Relais angeschlossen werden. Die Anzahl der Ausgänge ist hier auf drei beschränkt. Könne aber jederzeit erweitert werden.
+Anstelle der LED können auch Relais angeschlossen werden. Die Anzahl der Ausgänge ist hier auf drei beschränkt. Könnte aber jederzeit erweitert werden.
 Später sollen damit auch bestimmte Verbraucher angesteuert werden.
 
 Lauffähig ist das Script unter LiNUX/Python und wurde auf einem OrangePiZero eingesetzt. 
