@@ -6,7 +6,7 @@ Kein fertiges Projekt.
 Für die Installation auf einem OrangePiZero sind entsprechende Grundkenntisse zwingend erforderlich.
 Je nach verwendetem Image sind noch diverse Librarys (Python,I2C,OLED-Treiber pp.) zu installieren,
 
-Als Grundlage dient folgender Guthub :
+Als Grundlage dient folgender Github :
 
 https://github.com/Selbstbau-PV/Selbstbau-PV-Hoymiles-Nulleinspeisung-mit-OpenDTU-und-Shelly3EM/tree/main
 
