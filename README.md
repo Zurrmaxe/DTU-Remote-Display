@@ -16,6 +16,8 @@ Dieser Github wurde um ein Display und die Leuchtdioden ergänzt und an die ört
 
 Sicherlich kann man es auch auf einem ESP32 installieren, aber dazu fehlen mir die Kenntnisse. 
 Daher hier alles in herkömmlicher Weise für Linus/Armbian. 
+Wer es jedoch in ESP32 umsetzen kann und will, darf es gerne versuchen und den Code verwenden.
+
 Lauffähig ist das Script unter LiNUX/Python und wurde auf einem OrangePiZero eingesetzt. 
 Es wird automatisch beim Start geladen, wenn es als service gestartet wird. (service enable start service pp.)
 
